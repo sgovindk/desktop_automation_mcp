@@ -1,0 +1,12 @@
+faster-whisper
+sounddevice
+numpy
+groq
+mcp[cli]
+pyautogui
+mss
+pygetwindow
+Pillow
+scikit-learn
+opencv-python
+python-dotenv

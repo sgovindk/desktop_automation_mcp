@@ -1,0 +1,21 @@
+# Environment variables — never commit this
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+venv/
+.venv/
+*.egg-info/
+dist/
+build/
+
+# Models (large binary files)
+models/
+
+# Screenshots collected during data gathering
+screenshots/
+
+# VS Code
+.vscode/

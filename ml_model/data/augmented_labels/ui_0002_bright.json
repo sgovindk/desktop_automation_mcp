@@ -1,0 +1,66 @@
+[
+  {
+    "class": "search_bar",
+    "class_idx": 1,
+    "bbox": [
+      780,
+      184,
+      1700,
+      266
+    ],
+    "bbox_normalized": [
+      0.484375,
+      0.140625,
+      0.359375,
+      0.05125
+    ]
+  },
+  {
+    "class": "video_thumbnail",
+    "class_idx": 3,
+    "bbox": [
+      136,
+      366,
+      928,
+      838
+    ],
+    "bbox_normalized": [
+      0.2078125,
+      0.37625,
+      0.309375,
+      0.295
+    ]
+  },
+  {
+    "class": "video_thumbnail",
+    "class_idx": 3,
+    "bbox": [
+      940,
+      368,
+      1722,
+      834
+    ],
+    "bbox_normalized": [
+      0.519921875,
+      0.375625,
+      0.30546875,
+      0.29125
+    ]
+  },
+  {
+    "class": "video_thumbnail",
+    "class_idx": 3,
+    "bbox": [
+      1732,
+      366,
+      2512,
+      832
+    ],
+    "bbox_normalized": [
+      0.82890625,
+      0.374375,
+      0.3046875,
+      0.29125
+    ]
+  }
+]
