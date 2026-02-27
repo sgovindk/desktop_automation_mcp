@@ -33,6 +33,13 @@ from datetime import datetime
 # Add project root
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+from dotenv import load_dotenv
+load_dotenv(Path(__file__).parent.parent / ".env")
+
+# Contributor prefix — set CONTRIBUTOR in .env (e.g. CONTRIBUTOR=alice).
+# This prevents filename collisions when multiple people collect data.
+CONTRIBUTOR = os.getenv("CONTRIBUTOR", "shared").strip().lower().replace(" ", "_")
+
 
 # ── Class definitions ───────────────────────────────────────────────
 
@@ -103,8 +110,8 @@ class LabelingTool:
         self.image_count = self._count_existing_images()
 
     def _count_existing_images(self) -> int:
-        """Count existing images to continue numbering."""
-        return len(list(IMAGES_DIR.glob("*.png")))
+        """Count existing images for this contributor only."""
+        return len(list(IMAGES_DIR.glob(f"{CONTRIBUTOR}_ui_*.png")))
 
     def _mouse_callback(self, event, x, y, flags, param):
         """Handle mouse events for drawing bounding boxes."""
@@ -211,6 +218,7 @@ class LabelingTool:
         print("\n" + "=" * 60)
         print("  UI Element Data Collection & Labeling Tool")
         print("=" * 60)
+        print(f"  Contributor:     {CONTRIBUTOR}")
         print(f"  Existing images: {self.image_count}")
         print(f"  Save directory:  {DATA_DIR.absolute()}")
         print()
@@ -278,13 +286,13 @@ class LabelingTool:
             elif key == ord('s'):
                 # Save current
                 if self.image is not None:
-                    stem = f"ui_{self.image_count:04d}"
+                    stem = f"{CONTRIBUTOR}_ui_{self.image_count:04d}"
                     self._save_annotation(self.image, stem)
 
             elif key == ord('n'):
                 # Save + capture next
                 if self.image is not None:
-                    stem = f"ui_{self.image_count:04d}"
+                    stem = f"{CONTRIBUTOR}_ui_{self.image_count:04d}"
                     self._save_annotation(self.image, stem)
                     self.image_count += 1
 

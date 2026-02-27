@@ -20,8 +20,14 @@ import subprocess
 import cv2
 import numpy as np
 from pathlib import Path
+from dotenv import load_dotenv
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
+load_dotenv(Path(__file__).parent.parent / ".env")
+
+# Contributor prefix — set CONTRIBUTOR in .env (e.g. CONTRIBUTOR=alice).
+# This prevents filename collisions when multiple people collect data.
+CONTRIBUTOR = os.getenv("CONTRIBUTOR", "shared").strip().lower().replace(" ", "_")
 
 DATA_DIR = Path("ml_model/data")
 IMAGES_DIR = DATA_DIR / "images"
@@ -38,8 +44,9 @@ def capture_screenshot() -> np.ndarray:
         return cv2.cvtColor(frame, cv2.COLOR_BGRA2BGR)
 
 
-def count_existing() -> int:
-    return len(list(IMAGES_DIR.glob("*.png")))
+def count_existing(prefix: str) -> int:
+    """Count existing images for this contributor only."""
+    return len(list(IMAGES_DIR.glob(f"{prefix}_ui_*.png")))
 
 
 # Pages to visit for diverse UI screenshots
@@ -74,14 +81,16 @@ def main():
                         help=f"Number of pages to capture (max {len(PAGES)})")
     args = parser.parse_args()
 
-    idx = args.start if args.start is not None else count_existing() + 1
+    prefix = CONTRIBUTOR
+    idx = args.start if args.start is not None else count_existing(prefix) + 1
     n_pages = min(args.pages, len(PAGES))
 
     print("\n" + "=" * 60)
     print("  Batch Screenshot Collector")
     print("=" * 60)
+    print(f"  Contributor: {prefix}")
     print(f"  Will capture {n_pages} pages")
-    print(f"  Starting at: ui_{idx:04d}")
+    print(f"  Starting at: {prefix}_ui_{idx:04d}")
     print(f"  Save to: {IMAGES_DIR.absolute()}")
     print()
     print("  ⚠️  Make sure Chrome is open and visible!")
@@ -109,7 +118,7 @@ def main():
 
         # Capture screenshot
         frame = capture_screenshot()
-        filename = f"ui_{idx:04d}.png"
+        filename = f"{prefix}_ui_{idx:04d}.png"
         filepath = IMAGES_DIR / filename
         cv2.imwrite(str(filepath), frame)
         print(f"    📸 Saved: {filename} ({frame.shape[1]}x{frame.shape[0]})")
@@ -117,7 +126,6 @@ def main():
         idx += 1
         captured += 1
 
-    # Also capture with scroll positions for variety
     print(f"\n  ✅ Captured {captured} screenshots!")
     print(f"  Images saved to: {IMAGES_DIR.absolute()}")
     print()

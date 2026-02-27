@@ -11,11 +11,13 @@ venv/
 dist/
 build/
 
-# Models (large binary files)
+# Models (large binary files — retrained locally after merge)
 models/
 
-# Screenshots collected during data gathering
+# Old screenshots folder (not used for training)
 screenshots/
 
 # VS Code
 .vscode/
+
+# DO NOT ignore ml_model/data/ — teammates push their labeled data here
