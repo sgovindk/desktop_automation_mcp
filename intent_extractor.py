@@ -46,6 +46,7 @@ Available tools:
 
 8. scroll          — Scroll up or down.
    args: { "direction": "up" | "down", "clicks": <int> }
+   Use clicks=1000 for a normal scroll, clicks=2000 for a big scroll. Minimum 1000.
 
 9. screenshot      — Take a screenshot of the current screen.
    args: {}

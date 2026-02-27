@@ -192,15 +192,31 @@ class ToolExecutor:
 
     # ── Scroll ──────────────────────────────────────────────────────
 
-    def _scroll(self, direction: str = "down", clicks: int = 3) -> str:
-        amount = clicks if direction == "up" else -clicks
-        pyautogui.scroll(amount)
+    def _scroll(self, direction: str = "down", clicks: int = 1000) -> str:
+        clicks = max(clicks, 1000)
+
+        # Move mouse to center of screen — no click, just hover.
+        # pyautogui.scroll() fires at the current mouse position so this
+        # is enough to target the browser without accidentally clicking anything.
+        import mss
+        with mss.mss() as sct:
+            mon = sct.monitors[1]
+            cx = mon["left"] + mon["width"] // 2
+            cy = mon["top"] + mon["height"] // 2
+        pyautogui.moveTo(cx, cy)
+        time.sleep(0.15)
+
+        # Single call — fastest possible
+        sign = 1 if direction == "up" else -1
+        pyautogui.scroll(sign * clicks)
+
         return f"Scrolled {direction} by {clicks}"
 
     # ── Screenshot ──────────────────────────────────────────────────
 
     def _screenshot(self) -> str:
         import mss
+        time.sleep(3)  # Wait 3s so the screen settles before capturing
         with mss.mss() as sct:
             monitor = sct.monitors[1]
             img = sct.grab(monitor)
