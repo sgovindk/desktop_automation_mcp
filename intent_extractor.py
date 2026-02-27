@@ -81,6 +81,17 @@ Rules:
 - Do NOT just type text randomly — always click the search bar FIRST before typing a search query.
 - After typing in a search box, use press_key "enter" to search.
 - Do NOT add explanations, markdown, or anything outside the JSON.
+
+CONTEXT-AWARENESS (VERY IMPORTANT):
+- You will receive the current screen context: the active window title, the URL in the address bar (if a browser), and a list of visible UI elements detected by the ML vision model.
+- You will also receive a short history of recently executed actions.
+- USE THIS CONTEXT to avoid redundant steps:
+  - If Chrome is already the foreground window, do NOT open_app Chrome again. Use focus_window instead only if needed.
+  - If the user is already on youtube.com (check the window title or URL), do NOT navigate to youtube.com again.
+  - If the user is already on the correct website and wants to search, just click_search_bar → type_text → press_key enter.
+  - If a recent action already opened an app or navigated to a site, do NOT repeat it.
+- ALWAYS consider what is ALREADY on screen before generating commands.
+- Only generate the REMAINING steps needed from the current state, not the full sequence from scratch.
 """
 
 
@@ -96,12 +107,19 @@ class IntentExtractor:
         self.client = Groq(api_key=GROQ_API_KEY)
         print(f"[Intent] Groq client ready (model: {GROQ_MODEL})")
 
-    def extract(self, text: str) -> list[dict]:
+    def extract(
+        self,
+        text: str,
+        screen_context: str = "",
+        action_history: list[str] = None,
+    ) -> list[dict]:
         """
         Send natural language text to Groq and return a list of tool commands.
 
         Args:
             text: The transcribed voice command.
+            screen_context: Description of what's currently on screen.
+            action_history: List of recently executed actions.
 
         Returns:
             List of dicts like [{"tool": "open_app", "args": {"app_name": "chrome"}}, ...]
@@ -109,11 +127,26 @@ class IntentExtractor:
         if not text.strip():
             return []
 
+        # Build the user message with context
+        user_message = ""
+
+        if screen_context:
+            user_message += f"[CURRENT SCREEN STATE]\n{screen_context}\n\n"
+
+        if action_history:
+            recent = action_history[-8:]  # Last 8 actions max
+            user_message += "[RECENT ACTIONS]\n"
+            for action in recent:
+                user_message += f"- {action}\n"
+            user_message += "\n"
+
+        user_message += f"[USER COMMAND]\n{text}"
+
         response = self.client.chat.completions.create(
             model=GROQ_MODEL,
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": text},
+                {"role": "user", "content": user_message},
             ],
             temperature=GROQ_TEMPERATURE,
             max_tokens=GROQ_MAX_TOKENS,

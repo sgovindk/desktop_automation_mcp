@@ -34,6 +34,9 @@ class ToolExecutor:
         # Lazy-load the RF detector (only if vision tools are called)
         self._rf_detector = None
 
+        # Action history — keeps track of recent executed actions for context
+        self.action_history: list[str] = []
+
         # Build the tool dispatch table
         self.tools = {
             "open_app":         self._open_app,
@@ -91,6 +94,13 @@ class ToolExecutor:
                 result = self.tools[tool](**args)
                 print(f"[Exec] ✅ {result}")
                 results.append(result)
+
+                # Track action in history
+                self.action_history.append(f"{tool}({json.dumps(args)}) → {result}")
+                # Keep only last 15 actions
+                if len(self.action_history) > 15:
+                    self.action_history = self.action_history[-15:]
+
             except Exception as e:
                 msg = f"[Exec] ❌ {tool} failed: {e}"
                 print(msg)
@@ -244,6 +254,84 @@ class ToolExecutor:
                 result.append(win.title)
         return f"Open windows: {result}"
 
+    def get_screen_context(self) -> str:
+        """
+        Gather a snapshot of the current screen state:
+        - Active window title (tells us which app is in foreground)
+        - Detected UI elements (via RF model)
+        This context is sent to the LLM so it can skip redundant steps.
+        """
+        lines = []
+
+        # 1. Active window title
+        try:
+            active = gw.getActiveWindow()
+            if active and active.title.strip():
+                title = active.title.strip()
+                lines.append(f"Active window: \"{title}\"")
+
+                # Infer app and site from title
+                title_lower = title.lower()
+                if "chrome" in title_lower or "- google chrome" in title_lower:
+                    lines.append("Browser: Google Chrome is in the foreground.")
+                    # Extract website from Chrome title (format: "Page Title - Google Chrome")
+                    if " - google chrome" in title_lower:
+                        page_title = title.rsplit(" - Google Chrome", 1)[0].strip()
+                        if page_title:
+                            lines.append(f"Page title: \"{page_title}\"")
+                        # Detect known sites from page title
+                        if "youtube" in title_lower:
+                            lines.append("Website: YouTube is currently open.")
+                        elif "google" in title_lower:
+                            lines.append("Website: Google is currently open.")
+                        elif "github" in title_lower:
+                            lines.append("Website: GitHub is currently open.")
+                        elif "reddit" in title_lower:
+                            lines.append("Website: Reddit is currently open.")
+                        elif "wikipedia" in title_lower:
+                            lines.append("Website: Wikipedia is currently open.")
+                elif "firefox" in title_lower:
+                    lines.append("Browser: Firefox is in the foreground.")
+                elif "edge" in title_lower:
+                    lines.append("Browser: Microsoft Edge is in the foreground.")
+                elif "notepad" in title_lower:
+                    lines.append("App: Notepad is in the foreground.")
+                elif "explorer" in title_lower:
+                    lines.append("App: File Explorer is in the foreground.")
+                elif "code" in title_lower or "visual studio" in title_lower:
+                    lines.append("App: VS Code is in the foreground.")
+            else:
+                lines.append("Active window: Desktop / no active window")
+        except Exception:
+            lines.append("Active window: unknown")
+
+        # 2. Detected UI elements (quick RF scan)
+        try:
+            if self.rf_detector:
+                import mss, cv2
+                import numpy as np
+                with mss.mss() as sct:
+                    monitor = sct.monitors[1]
+                    img = sct.grab(monitor)
+                    frame = np.array(img)
+                    frame = cv2.cvtColor(frame, cv2.COLOR_BGRA2BGR)
+
+                detections = self.rf_detector.detect(frame, max_proposals=300)
+                if detections:
+                    element_summary = []
+                    for d in detections[:8]:  # Top 8
+                        element_summary.append(
+                            f"{d['label']} (conf={d['confidence']:.2f}, "
+                            f"center=({d['center']['x']},{d['center']['y']}))"
+                        )
+                    lines.append(f"Visible UI elements: {', '.join(element_summary)}")
+                else:
+                    lines.append("Visible UI elements: none detected")
+        except Exception:
+            pass  # Don't fail the whole pipeline if detection fails
+
+        return "\n".join(lines)
+
     # ── Vision: RF-based element detection ──────────────────────────
 
     def _detect_ui_elements(self) -> str:
@@ -364,9 +452,18 @@ def process_command(text: str, extractor: IntentExtractor, executor: ToolExecuto
     print(f"🎤  Command: \"{text}\"")
     print(f"{'─'*60}")
 
-    # Step 1: Extract intent → list of tool commands
+    # Step 0: Gather screen context
+    print("[Context] Scanning current screen state...")
+    screen_context = executor.get_screen_context()
+    print(f"[Context] {screen_context}")
+
+    # Step 1: Extract intent → list of tool commands (with context)
     print("[Intent] Parsing command...")
-    commands = extractor.extract(text)
+    commands = extractor.extract(
+        text,
+        screen_context=screen_context,
+        action_history=executor.action_history,
+    )
 
     if not commands:
         print("[Intent] ❌ Could not parse any commands.")
