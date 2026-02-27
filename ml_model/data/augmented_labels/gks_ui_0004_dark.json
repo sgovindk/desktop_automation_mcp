@@ -1,0 +1,82 @@
+[
+  {
+    "class": "video_thumbnail",
+    "class_idx": 3,
+    "bbox": [
+      352,
+      340,
+      1000,
+      714
+    ],
+    "bbox_normalized": [
+      0.2640625,
+      0.329375,
+      0.253125,
+      0.23375
+    ]
+  },
+  {
+    "class": "video_thumbnail",
+    "class_idx": 3,
+    "bbox": [
+      352,
+      726,
+      998,
+      1086
+    ],
+    "bbox_normalized": [
+      0.263671875,
+      0.56625,
+      0.25234375,
+      0.225
+    ]
+  },
+  {
+    "class": "video_thumbnail",
+    "class_idx": 3,
+    "bbox": [
+      348,
+      1096,
+      1000,
+      1466
+    ],
+    "bbox_normalized": [
+      0.26328125,
+      0.800625,
+      0.2546875,
+      0.23125
+    ]
+  },
+  {
+    "class": "search_bar",
+    "class_idx": 1,
+    "bbox": [
+      772,
+      186,
+      1600,
+      262
+    ],
+    "bbox_normalized": [
+      0.46328125,
+      0.14,
+      0.3234375,
+      0.0475
+    ]
+  },
+  {
+    "class": "button",
+    "class_idx": 0,
+    "bbox": [
+      2492,
+      6,
+      2552,
+      54
+    ],
+    "bbox_normalized": [
+      0.98515625,
+      0.01875,
+      0.0234375,
+      0.03
+    ]
+  }
+]

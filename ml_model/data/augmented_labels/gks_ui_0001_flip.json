@@ -1,0 +1,66 @@
+[
+  {
+    "class": "search_bar",
+    "class_idx": 1,
+    "bbox": [
+      962,
+      186,
+      1774,
+      266
+    ],
+    "bbox_normalized": [
+      0.465625,
+      0.14125,
+      0.3171875,
+      0.05
+    ]
+  },
+  {
+    "class": "button",
+    "class_idx": 0,
+    "bbox": [
+      10,
+      8,
+      62,
+      52
+    ],
+    "bbox_normalized": [
+      0.9859375,
+      0.01875,
+      0.0203125,
+      0.0275
+    ]
+  },
+  {
+    "class": "video_thumbnail",
+    "class_idx": 3,
+    "bbox": [
+      1414,
+      818,
+      2188,
+      1258
+    ],
+    "bbox_normalized": [
+      0.296484375,
+      0.64875,
+      0.30234375,
+      0.275
+    ]
+  },
+  {
+    "class": "video_thumbnail",
+    "class_idx": 3,
+    "bbox": [
+      1416,
+      1274,
+      2184,
+      1528
+    ],
+    "bbox_normalized": [
+      0.296875,
+      0.875625,
+      0.3,
+      0.15875
+    ]
+  }
+]
