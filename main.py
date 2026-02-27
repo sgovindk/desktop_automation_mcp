@@ -488,7 +488,16 @@ def main():
                         help="Listen for a single command then exit")
     parser.add_argument("--text", type=str, default=None,
                         help="Process a text command instead of using voice")
+    parser.add_argument("--gui", action="store_true",
+                        help="Launch the floating GUI widget")
     args = parser.parse_args()
+
+    # GUI mode — launch floating widget
+    if args.gui:
+        from gui import FloatingWidget
+        app = FloatingWidget()
+        app.run()
+        return
 
     print("\n" + "=" * 60)
     print("  🎙️  Voice Desktop Automation System")
